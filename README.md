@@ -5,6 +5,13 @@ Deep learning practice is increasingly driven by powerful foundation models (FM)
 <p align="center">
   <img align="middle" src="./figs/sgld_eq.png"/>
 </p>
+<p align="center">
+  <img align="middle" src="./figs/algorithm.png"/>
+</p>
+<p align="center">
+  <img align="middle" src="./figs/fig1.png"/>
+</p>
+
 
 ---
 
