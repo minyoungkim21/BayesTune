@@ -10,49 +10,35 @@ Deep learning practice is increasingly driven by powerful foundation models (FM)
 
 ## Set up environment
 ```
->> conda env create -f environment.yml
->> conda activate recmixvae
->> conda install pytorch torchvision cudatoolkit=10.0 -c pytorch
+Python >= 3.7.8
+PyTorch >= 1.8.1+cu102
+TorchVision >= 0.9.1+cu102
+
+>> pip install jiant packaging==21.3 transformers
 ```
 
-## Usage examples
-We provide the demo codes that run on the MNIST dataset. It should be straightforward to modify the codes for other datasets (e.g., "datasets.py"). 
-For the MNIST dataset, it can automatically download the dataset, and place it in the data folder you have specified. 
+## Datasets
 
-The first step is to train the VAE model, where the learned VAE encoder model will be used to initialise our mixture inference component models. 
-To train the VAE model,
-```
->> python train_vae.py
-```
-You can consult the source code for alternative training options (command line arguments). During training, the model files will be saved in the checkpoint folder at every training epoch. 
+Download the "data/tasks" from SAM [10]: [https://github.com/fuzihaofzh/AnalyzeParameterEfficientFinetune](https://github.com/fuzihaofzh/AnalyzeParameterEfficientFinetune)
 
-Then you can evaluate the trained VAE model using "eval_vae.py" with the model's epoch number. 
-For instance, to evaluate the likelihood on the test data wrt the VAE model after the training epoch 999 (perhaps chosen by validation performance),
+
+## Command lines for training with ```mrpc```
+
+(stage-1)
 ```
->> python eval_vae.py --ckpt_load_epoch 999 --task loglik
-```
-Or, to measure the test inference time,
-```
->> python eval_vae.py --ckpt_load_epoch 999 --task time
+>> python3 demo_stage1.py run --data_dir [DATA-DIR] --exp_dir output/exps/mrpc --hf_pretrained_model_name_or_path roberta-base --tasks mrpc --train_batch_size 16 --num_train_epochs 10000 --min_train_steps 20000 --eval_every_steps 500 --keep_checkpoint_when_done --do_test --log_dir output/logs/runs/test/ --learning_rate 1e-4 --no_improvements_for_n_evals 40 --user_mode alp=0.01,bet=100,lamb_init=0.0001,lr_others=0.01,Nexp=12,nd=1,burnin_steps=12000,thin_steps=100,warmup_steps=10000 --seed 0 --run_name trial1_stage1_seed0 
 ```
 
-Now, we train the recursive mixture. Among other options, the path to the trained VAE model and the mixture order (the number of mixture components) are the most important. For instance, with the epoch-999th model as initialization and the mixture order 5, we can start the mixture training by:
+(stage-2)
 ```
->> python train_rme.py --num_comps 5 --init_vae_path ./checkpoints/MNIST/VAE/MNIST.VAE.0/999.pkl
+>> python3 demo_stage2.py run --data_dir [DATA-DIR] --exp_dir output/exps/mrpc --hf_pretrained_model_name_or_path roberta-base --tasks mrpc --train_batch_size 16 --num_train_epochs 10000 --min_train_steps 20000 --eval_every_steps 500 --keep_checkpoint_when_done --do_test --log_dir output/logs/runs/test/ --learning_rate 1e-3 --no_improvements_for_n_evals 40 --user_mode splevel=0.005,mcmc=0,lamb_path=output/exps/mrpc/runs/trial1_stage1_seed0/lambda_stats.pt --seed 0 --run_name trial1_stage2_mcmc0_seed0 
 ```
 
-Similar to VAE, you can evaluate the trained mixture model using "eval_rme.py". 
-For instance, to evaluate the likelihood on the test data wrt the mixture model after the training epoch 4 (perhaps chosen by validation performance),
-```
->> python eval_rme.py --ckpt_load_epoch 4 --task loglik
-```
-Or, to measure the test inference time,
-```
->> python eval_rme.py --ckpt_load_epoch 4 --task time
-```
+The detailed hyperparameters for the other datasets can be found in Appendix in our paper.
+
 
 ## Acknowledgements
-This code is built from: [https://github.com/yookoon/VLAE](https://github.com/yookoon/VLAE)
+This code is built from [the jiant library](https://jiant.info/) and [https://github.com/fuzihaofzh/AnalyzeParameterEfficientFinetune](https://github.com/fuzihaofzh/AnalyzeParameterEfficientFinetune).
 
 
 ## References
